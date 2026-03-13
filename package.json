@@ -1,0 +1,13 @@
+{
+  "name": "simulo-11",
+  "version": "1.0.0",
+  "description": "3D Fighter Jet Game",
+  "main": "index.html",
+  "scripts": {
+    "start": "python3 -m http.server $PORT --bind 0.0.0.0",
+    "deploy": "npx wrangler pages deploy . --project-name simulo-11"
+  },
+  "devDependencies": {
+    "wrangler": "^4.73.0"
+  }
+}

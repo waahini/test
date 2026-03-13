@@ -1,10 +1,89 @@
-body {
-    margin: 0;
-    overflow: hidden;
-    background: #87ceeb;
+body { 
+    margin: 0; 
+    overflow: hidden; 
+    background: #050510; 
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: #fff;
 }
 
-#container {
-    width: 100vw;
-    height: 100vh;
+#container { 
+    width: 100vw; 
+    height: 100vh; 
+    background: radial-gradient(circle at center, #1b2735 0%, #090a0f 100%);
+}
+
+#hud {
+    position: absolute;
+    top: 30px;
+    left: 30px;
+    color: #00ffff;
+    text-shadow: 0 0 10px rgba(0,255,255,0.8), 0 0 20px rgba(0,255,255,0.4);
+    pointer-events: none;
+    user-select: none;
+    z-index: 10;
+}
+
+.stat { 
+    font-size: 28px; 
+    font-weight: 900; 
+    margin-bottom: 10px; 
+    font-family: 'Courier New', Courier, monospace; 
+    letter-spacing: 2px;
+}
+
+.hint { 
+    font-size: 13px; 
+    opacity: 0.6; 
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+#overlay {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    display: flex; flex-direction: column; justify-content: center; align-items: center;
+    background: rgba(0,0,0,0.85);
+    color: #00ffff;
+    transition: opacity 0.5s;
+    text-align: center;
+    z-index: 100;
+}
+
+#overlay h1 { 
+    font-size: 72px; 
+    margin-bottom: 20px; 
+    font-family: 'Courier New', Courier, monospace; 
+    text-shadow: 0 0 30px rgba(0,255,255,1), 0 0 60px rgba(0,255,255,0.5);
+    font-weight: 900;
+}
+
+#overlay p { 
+    font-size: 28px; 
+    letter-spacing: 4px; 
+    text-transform: uppercase;
+    animation: blink 1.5s infinite;
+}
+
+#overlay .sub-text { 
+    font-size: 18px; 
+    opacity: 0.5; 
+    margin-top: 40px; 
+    text-transform: uppercase;
+    letter-spacing: 5px;
+}
+
+@keyframes blink {
+    0% { opacity: 1; }
+    50% { opacity: 0.3; }
+    100% { opacity: 1; }
+}
+
+a {
+    transition: all 0.3s ease;
+}
+
+a:hover {
+    background: #00ffff !important;
+    color: #000 !important;
+    box-shadow: 0 0 20px #00ffff;
 }

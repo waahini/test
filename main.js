@@ -1,34 +1,55 @@
 // Scene Setup
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x1a1a2e); // Deep Twilight Blue
-scene.fog = new THREE.Fog(0x1a1a2e, 100, 1000);
+scene.background = new THREE.Color(0x87CEEB); // Sky Blue
+scene.fog = new THREE.Fog(0x87CEEB, 200, 3000);
 
-const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 4000);
+const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 5000);
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 document.getElementById('container').appendChild(renderer.domElement);
 
-// Lighting
-scene.add(new THREE.AmbientLight(0xffffff, 0.6));
-const dirLight = new THREE.DirectionalLight(0xffffff, 1.2);
-dirLight.position.set(50, 200, 100);
+// Lighting - MUCH BRIGHTER
+scene.add(new THREE.AmbientLight(0xffffff, 0.7)); // Higher ambient light
+const dirLight = new THREE.DirectionalLight(0xffffff, 2.0);
+dirLight.position.set(200, 500, 200);
 scene.add(dirLight);
 
-// Stars
-const starGeom = new THREE.BufferGeometry();
-const starPos = [];
-for(let i=0; i<4000; i++) starPos.push((Math.random()-0.5)*3000, Math.random()*1500, (Math.random()-0.5)*3000);
-starGeom.setAttribute('position', new THREE.Float32BufferAttribute(starPos, 3));
-scene.add(new THREE.Points(starGeom, new THREE.PointsMaterial({ color: 0xffffff, size: 1.2 })));
+// Sun (Visual Representative)
+const sunGeom = new THREE.SphereGeometry(30, 32, 32);
+const sunMat = new THREE.MeshBasicMaterial({ color: 0xffffaa, transparent: true, opacity: 0.8 });
+const sun = new THREE.Mesh(sunGeom, sunMat);
+sun.position.set(500, 1000, 500);
+scene.add(sun);
+
+// Diverse Stars (Keep for high-altitude look)
+function createStars() {
+    const starColors = [0xffffff, 0xaaaaff, 0xffffaa, 0xffaaaa];
+    starColors.forEach(color => {
+        const starGeom = new THREE.BufferGeometry();
+        const starPos = [];
+        for(let i=0; i<500; i++) starPos.push((Math.random()-0.5)*4000, 500 + Math.random()*1500, (Math.random()-0.5)*4000);
+        starGeom.setAttribute('position', new THREE.Float32BufferAttribute(starPos, 3));
+        scene.add(new THREE.Points(starGeom, new THREE.PointsMaterial({ color: color, size: Math.random() * 2 + 0.5 })));
+    });
+}
+createStars();
+
+// Nebula Effect (Lighter tones)
+const nebulaGeom = new THREE.BufferGeometry();
+const nebulaPos = [];
+for(let i=0; i<100; i++) nebulaPos.push((Math.random()-0.5)*3000, 300 + (Math.random()-0.5)*500, (Math.random()-0.5)*3000);
+nebulaGeom.setAttribute('position', new THREE.Float32BufferAttribute(nebulaPos, 3));
+const nebula = new THREE.Points(nebulaGeom, new THREE.PointsMaterial({ color: 0xffffff, size: 50, transparent: true, opacity: 0.1 }));
+scene.add(nebula);
 
 // Speed Lines (for Boost)
 const speedLines = new THREE.Group();
-const lineGeom = new THREE.BoxGeometry(0.02, 0.02, 5);
+const lineGeom = new THREE.BoxGeometry(0.02, 0.02, 8);
 const lineMat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0 });
-for(let i=0; i<40; i++) {
+for(let i=0; i<60; i++) {
     const line = new THREE.Mesh(lineGeom, lineMat);
-    line.position.set((Math.random()-0.5)*30, (Math.random()-0.5)*20, -Math.random()*50);
+    line.position.set((Math.random()-0.5)*50, (Math.random()-0.5)*40, -Math.random()*100);
     speedLines.add(line);
 }
 camera.add(speedLines);
@@ -37,35 +58,28 @@ scene.add(camera);
 // Fighter Jet (Fixed Symmetrical Wings)
 function createFighterJet() {
     const jet = new THREE.Group();
-    const mainMat = new THREE.MeshPhongMaterial({ color: 0x2c3e50, shininess: 100 });
-    const glowMat = new THREE.MeshBasicMaterial({ color: 0x00ffff });
+    const mainMat = new THREE.MeshPhongMaterial({ color: 0xe0e0e0, shininess: 100 }); // Silver/Light Grey
+    const glowMat = new THREE.MeshBasicMaterial({ color: 0xff4400 }); // Orange Thruster
 
     // Fuselage
     const body = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.5, 6, 8), mainMat);
     body.rotateX(Math.PI / 2);
     jet.add(body);
 
-    // Glowing Strips
-    const strip = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.05, 4), glowMat);
-    strip.position.set(0.4, 0.1, 0);
-    jet.add(strip);
-    const strip2 = strip.clone(); strip2.position.x = -0.4;
-    jet.add(strip2);
-
-    // Wings (Fixed Symmetrical Shape)
+    // Wings
     const wingShape = new THREE.Shape();
-    wingShape.moveTo(0, 1.5);      // Nose area
-    wingShape.lineTo(4.5, -1.5);   // Right wing tip
-    wingShape.lineTo(0, -0.5);     // Back middle
-    wingShape.lineTo(-4.5, -1.5);  // Left wing tip
-    wingShape.lineTo(0, 1.5);      // Back to nose
+    wingShape.moveTo(0, 1.5);
+    wingShape.lineTo(4.5, -1.5);
+    wingShape.lineTo(0, -0.5);
+    wingShape.lineTo(-4.5, -1.5);
+    wingShape.lineTo(0, 1.5);
     
     const wingGeom = new THREE.ShapeGeometry(wingShape);
-    const wings = new THREE.Mesh(wingGeom, new THREE.MeshPhongMaterial({ color: 0x1a2530, side: THREE.DoubleSide }));
+    const wings = new THREE.Mesh(wingGeom, new THREE.MeshPhongMaterial({ color: 0xd0d0d0, side: THREE.DoubleSide }));
     wings.rotation.x = Math.PI / 2;
     jet.add(wings);
 
-    // Tails (Twin Stabilizers)
+    // Tails
     const tailShape = new THREE.Shape();
     tailShape.moveTo(0, 0);
     tailShape.lineTo(1.2, -1.2);
@@ -94,24 +108,60 @@ function createFighterJet() {
 const player = createFighterJet();
 scene.add(player);
 
+// Clouds - MORE AND BRIGHTER
+const clouds = [];
+function createCloud(pos) {
+    const cloud = new THREE.Group();
+    const cloudMat = new THREE.MeshPhongMaterial({ color: 0xffffff, transparent: true, opacity: 0.8 });
+    for(let i=0; i<8; i++) {
+        const part = new THREE.Mesh(new THREE.SphereGeometry(4 + Math.random()*6, 12, 12), cloudMat);
+        part.position.set(Math.random()*15, Math.random()*5, Math.random()*15);
+        cloud.add(part);
+    }
+    cloud.position.copy(pos);
+    scene.add(cloud);
+    clouds.push(cloud);
+}
+for(let i=0; i<150; i++) createCloud(new THREE.Vector3((Math.random()-0.5)*5000, 20 + Math.random()*300, (Math.random()-0.5)*5000));
+
+// Floating Islands
+const islands = [];
+function createIsland() {
+    const island = new THREE.Group();
+    const geom = new THREE.ConeGeometry(25 + Math.random()*40, 60, 4);
+    const mat = new THREE.MeshPhongMaterial({ color: 0x6e5a4a });
+    const cone = new THREE.Mesh(geom, mat);
+    cone.rotation.x = Math.PI;
+    island.add(cone);
+    
+    const top = new THREE.Mesh(new THREE.BoxGeometry(35 + Math.random()*25, 3, 35 + Math.random()*25), new THREE.MeshPhongMaterial({ color: 0x4d8a37 }));
+    top.position.y = 0;
+    island.add(top);
+
+    island.position.set((Math.random()-0.5)*4500, -20 - Math.random()*50, (Math.random()-0.5)*4500);
+    scene.add(island);
+    islands.push(island);
+}
+for(let i=0; i<50; i++) createIsland();
+
 // Enemies (Tech Drones)
 const enemies = [];
 const droneMat = new THREE.MeshPhongMaterial({ color: 0xff0044, emissive: 0x330000 });
 function createEnemy() {
-    const drone = new THREE.Mesh(new THREE.OctahedronGeometry(2.5), droneMat);
-    drone.position.set((Math.random()-0.5)*2500, 20 + Math.random()*100, (Math.random()-0.5)*2500);
+    const drone = new THREE.Mesh(new THREE.OctahedronGeometry(3), droneMat);
+    drone.position.set((Math.random()-0.5)*4000, 30 + Math.random()*200, (Math.random()-0.5)*4000);
     scene.add(drone);
     enemies.push(drone);
 }
-for(let i=0; i<60; i++) createEnemy();
+for(let i=0; i<100; i++) createEnemy();
 
 // Explosion
 const particles = [];
 function createExplosion(pos) {
-    for(let i=0; i<15; i++) {
-        const p = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.3, 0.3), new THREE.MeshBasicMaterial({ color: 0xffaa00 }));
+    for(let i=0; i<20; i++) {
+        const p = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.4, 0.4), new THREE.MeshBasicMaterial({ color: 0xff4400 }));
         p.position.copy(pos);
-        p.userData = { vel: new THREE.Vector3((Math.random()-0.5)*4, (Math.random()-0.5)*4, (Math.random()-0.5)*4), life: 25 };
+        p.userData = { vel: new THREE.Vector3((Math.random()-0.5)*6, (Math.random()-0.5)*6, (Math.random()-0.5)*6), life: 30 };
         scene.add(p);
         particles.push(p);
     }
@@ -121,25 +171,40 @@ function createExplosion(pos) {
 const keys = {};
 let isStarted = false, isGameOver = false, score = 0, distance = 0, speed = 1.2;
 
+function startGame() {
+    if (isGameOver) {
+        location.reload();
+        return;
+    }
+    if (!isStarted) {
+        isStarted = true;
+        document.getElementById('overlay').style.display = 'none';
+    }
+}
+window.startGame = startGame;
+
 document.addEventListener('keydown', (e) => {
     keys[e.code] = true;
-    if(!isStarted && !isGameOver) { isStarted = true; document.getElementById('overlay').style.display = 'none'; }
-    if(isGameOver && e.code === 'KeyR') location.reload();
+    startGame();
     if(isStarted && !isGameOver && e.code === 'Space') shoot();
 });
 document.addEventListener('keyup', (e) => keys[e.code] = false);
 
+// Initial Camera Position
+camera.position.set(0, 10, -30);
+camera.lookAt(player.position);
+
 // Bullets
 const bullets = [];
 function shoot() {
-    const b = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.2, 4), new THREE.MeshBasicMaterial({ color: 0x00ffff }));
+    const b = new THREE.Mesh(new THREE.BoxGeometry(0.25, 0.25, 5), new THREE.MeshBasicMaterial({ color: 0xffff00 }));
     b.position.copy(player.position); b.quaternion.copy(player.quaternion);
-    b.userData = { vel: new THREE.Vector3(0,0,8).applyQuaternion(player.quaternion), life: 70 };
+    b.userData = { vel: new THREE.Vector3(0,0,10).applyQuaternion(player.quaternion), life: 80 };
     scene.add(b); bullets.push(b);
 }
 
-// Ocean (Bright Grid)
-const ocean = new THREE.GridHelper(20000, 100, 0x00ffff, 0x333333);
+// Ocean (More vibrant blue)
+const ocean = new THREE.GridHelper(20000, 150, 0x00aaff, 0x0055ff);
 ocean.position.y = -10;
 scene.add(ocean);
 
@@ -147,21 +212,21 @@ function animate() {
     requestAnimationFrame(animate);
     if(isStarted && !isGameOver) {
         const boost = keys['ShiftLeft'] || keys['ShiftRight'];
-        speed = THREE.MathUtils.lerp(speed, boost ? 4.0 : 1.2, 0.1);
+        speed = THREE.MathUtils.lerp(speed, boost ? 5.5 : 1.5, 0.1);
         
         speedLines.children.forEach(l => {
-            l.material.opacity = THREE.MathUtils.lerp(l.material.opacity, boost ? 0.8 : 0, 0.1);
+            l.material.opacity = THREE.MathUtils.lerp(l.material.opacity, boost ? 0.6 : 0, 0.1);
             l.position.z += speed * 2;
             if(l.position.z > 0) l.position.z = -100;
         });
 
-        player.engine.scale.set(1, 1, boost ? 4 : 1);
-        player.engine.material.color.setHex(boost ? 0xffffff : 0x00ffff);
+        player.engine.scale.set(1.5, 1.5, boost ? 6 : 1.5);
+        player.engine.material.color.setHex(boost ? 0xffff00 : 0xff4400);
 
-        if(keys['ArrowLeft']) player.rotation.z += 0.07;
-        if(keys['ArrowRight']) player.rotation.z -= 0.07;
-        if(keys['ArrowUp']) player.rotation.x -= 0.04;
-        if(keys['ArrowDown']) player.rotation.x += 0.04;
+        if(keys['ArrowLeft']) player.rotation.z += 0.08;
+        if(keys['ArrowRight']) player.rotation.z -= 0.08;
+        if(keys['ArrowUp']) player.rotation.x -= 0.05;
+        if(keys['ArrowDown']) player.rotation.x += 0.05;
         player.rotation.z *= 0.94;
         player.rotation.y -= player.rotation.z * 0.05;
 
@@ -171,14 +236,14 @@ function animate() {
         for(let i=bullets.length-1; i>=0; i--) {
             const b = bullets[i]; b.position.add(b.userData.vel); b.userData.life--;
             enemies.forEach((e, j) => {
-                if(b.position.distanceTo(e.position) < 8) {
+                if(b.position.distanceTo(e.position) < 10) {
                     createExplosion(e.position); scene.remove(e); enemies.splice(j, 1);
                     scene.remove(b); bullets.splice(i, 1);
                     score += 250; document.getElementById('score').innerText = score;
                     createEnemy();
                 }
             });
-            if(b.userData.life <= 0 && bullets[i] === b) { scene.remove(b); bullets.splice(i, 1); }
+            if(b && b.userData.life <= 0) { scene.remove(b); bullets.splice(i, 1); }
         }
 
         for(let i=particles.length-1; i>=0; i--) {
@@ -186,8 +251,22 @@ function animate() {
             if(p.userData.life <= 0) { scene.remove(p); particles.splice(i, 1); }
         }
 
-        if(player.position.y < -9.5) isGameOver = true;
-        if(isGameOver) { document.getElementById('overlay').style.display = 'flex'; document.getElementById('overlay').querySelector('h1').innerText = 'MISSION FAILED'; }
+        clouds.forEach(c => {
+            c.position.x += 0.2;
+            if(c.position.x > 2500) c.position.x = -2500;
+        });
+
+        let collided = false;
+        islands.forEach(is => {
+            if(player.position.distanceTo(is.position) < 35) collided = true;
+        });
+
+        if(player.position.y < -9.5 || collided) {
+            isGameOver = true;
+            document.getElementById('overlay').style.display = 'flex';
+            document.getElementById('overlay').querySelector('h1').innerText = 'MISSION FAILED';
+            document.getElementById('overlay-msg').innerText = 'Click or ANY KEY to Restart';
+        }
 
         const camOff = new THREE.Vector3(0, 2, -14).applyQuaternion(player.quaternion);
         camera.position.lerp(player.position.clone().add(camOff), 0.1);
@@ -202,3 +281,8 @@ function animate() {
     renderer.render(scene, camera);
 }
 animate();
+window.addEventListener('resize', () => {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+});

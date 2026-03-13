@@ -1,16 +1,24 @@
-
-# Blueprint: 3D Airplane Game
+# Blueprint: 3D Fighter Jet Game - Strike!
 
 ## Overview
 
-This document outlines the plan for creating a 3D airplane game using Three.js. The game will feature a controllable airplane, a simple environment, and a game loop.
+This document outlines the plan for creating a 3D airplane game using Three.js. The game features a controllable fighter jet, an atmospheric environment, and a game loop.
 
-## Current Plan
+## Features
 
-1.  **Set up the HTML structure:** Modify `index.html` to include the Three.js library and a container for the game.
-2.  **Style the game:** Update `style.css` to create a visually appealing layout for the game.
-3.  **Implement the game logic in `main.js`:**
-    *   Set up the Three.js scene, camera, and renderer.
-    *   Create an airplane and an environment.
-    *   Implement controls for the airplane.
-    *   Create a game loop for rendering and animation.
+1.  **Controllable Fighter Jet**: Use arrow keys to steer, space to shoot, and shift to boost.
+2.  **Atmospheric Background**: Diverse stars, nebula effects, drifting clouds, and floating islands.
+3.  **Enemy Drones**: Tech drones that spawn randomly and can be destroyed.
+4.  **Game Over/Restart Logic**: MISSION FAILED on crash or low altitude. Restart with ANY key.
+5.  **Dynamic HUD**: Real-time score, altitude, and distance tracking.
+
+## Technical Stack
+
+*   **Three.js**: 3D rendering.
+*   **Vanilla CSS**: UI styling.
+*   **HTML5**: Structure.
+*   **Node.js/Python**: Local development server.
+
+## Current Status
+
+All core features and visual updates are completed. Ready for deployment to any static hosting service.

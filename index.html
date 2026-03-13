@@ -4,46 +4,23 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>3D Fighter Jet Game - Strike!</title>
-    <style>
-        body { margin: 0; overflow: hidden; background: #000; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        #container { width: 100vw; height: 100vh; }
-        #hud {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            color: #00ff00;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
-            pointer-events: none;
-            user-select: none;
-        }
-        .stat { font-size: 24px; font-weight: bold; margin-bottom: 5px; font-family: 'Courier New', Courier, monospace; }
-        .hint { font-size: 14px; opacity: 0.8; }
-        #overlay {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            display: flex; flex-direction: column; justify-content: center; align-items: center;
-            background: rgba(0,0,0,0.5);
-            color: #00ff00;
-            transition: opacity 0.5s;
-        }
-        #overlay h1 { font-size: 48px; margin-bottom: 10px; font-family: 'Courier New', Courier, monospace; }
-        #overlay p { font-size: 18px; }
-    </style>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div id="container"></div>
     <div id="hud">
-        <div class="stat">Score: <span id="score">0</span></div>
-        <div class="stat">Altitude: <span id="altitude">0</span>m</div>
-        <div class="stat">Distance: <span id="distance">0</span>m</div>
-        <div class="hint">ARROWS to steer • SPACE to shoot • SHIFT to Boost • Destroy the Red Spheres!</div>
+        <div class="stat">SCORE: <span id="score">0</span></div>
+        <div class="stat">ALTITUDE: <span id="altitude">0</span>m</div>
+        <div class="stat">DISTANCE: <span id="distance">0</span>m</div>
+        <div class="hint">ARROWS to steer • SPACE to shoot • SHIFT to Boost</div>
         <div class="hint" style="margin-top: 10px;">
-            <a href="contact.html" style="color: #00ff00; text-decoration: none; border: 1px solid #00ff00; padding: 2px 5px; pointer-events: auto;">제휴 문의</a>
+            <a href="contact.html" style="color: #00ffff; text-decoration: none; border: 1px solid #00ffff; padding: 5px 10px; pointer-events: auto; display: inline-block;">제휴 문의</a>
         </div>
     </div>
-    <div id="overlay">
+    <div id="overlay" onclick="startGame()">
         <h1>FIGHTER JET STRIKE</h1>
-        <p>Press any key to start mission</p>
+        <p id="overlay-msg">Click or Press any key to start mission</p>
+        <div class="sub-text">Operation Simulo-11</div>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
