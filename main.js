@@ -10,7 +10,7 @@ renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 document.getElementById('container').appendChild(renderer.domElement);
 
 // Lighting
-scene.add(new THREE.AmbientLight(0xffffff, 0.6)); // Increased ambient light
+scene.add(new THREE.AmbientLight(0xffffff, 0.6));
 const dirLight = new THREE.DirectionalLight(0xffffff, 1.2);
 dirLight.position.set(50, 200, 100);
 scene.add(dirLight);
@@ -31,14 +31,14 @@ for(let i=0; i<40; i++) {
     line.position.set((Math.random()-0.5)*30, (Math.random()-0.5)*20, -Math.random()*50);
     speedLines.add(line);
 }
-camera.add(speedLines); // Attach to camera
+camera.add(speedLines);
 scene.add(camera);
 
-// Fighter Jet (Enhanced Visibility)
+// Fighter Jet (Fixed Symmetrical Wings)
 function createFighterJet() {
     const jet = new THREE.Group();
     const mainMat = new THREE.MeshPhongMaterial({ color: 0x2c3e50, shininess: 100 });
-    const glowMat = new THREE.MeshBasicMaterial({ color: 0x00ffff }); // Cyan Glow
+    const glowMat = new THREE.MeshBasicMaterial({ color: 0x00ffff });
 
     // Fuselage
     const body = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.5, 6, 8), mainMat);
@@ -52,23 +52,38 @@ function createFighterJet() {
     const strip2 = strip.clone(); strip2.position.x = -0.4;
     jet.add(strip2);
 
-    // Wings
-    const wingGeom = new THREE.BufferGeometry();
-    const vertices = new Float32Array([ 0,0,1, 4.5,0,-2.5, 0,0,-1.5, -4.5,0,-2.5, 0,0,1 ]);
-    wingGeom.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
+    // Wings (Fixed Symmetrical Shape)
+    const wingShape = new THREE.Shape();
+    wingShape.moveTo(0, 1.5);      // Nose area
+    wingShape.lineTo(4.5, -1.5);   // Right wing tip
+    wingShape.lineTo(0, -0.5);     // Back middle
+    wingShape.lineTo(-4.5, -1.5);  // Left wing tip
+    wingShape.lineTo(0, 1.5);      // Back to nose
+    
+    const wingGeom = new THREE.ShapeGeometry(wingShape);
     const wings = new THREE.Mesh(wingGeom, new THREE.MeshPhongMaterial({ color: 0x1a2530, side: THREE.DoubleSide }));
+    wings.rotation.x = Math.PI / 2;
     jet.add(wings);
 
-    // Tails
-    const tailGeom = new THREE.BoxGeometry(0.1, 1.2, 0.8);
-    const tail1 = new THREE.Mesh(tailGeom, mainMat);
-    tail1.position.set(0.6, 0.6, -1.8); tail1.rotation.y = 0.3;
-    jet.add(tail1);
-    const tail2 = tail1.clone(); tail2.position.x = -0.6; tail2.rotation.y = -0.3;
-    jet.add(tail2);
+    // Tails (Twin Stabilizers)
+    const tailShape = new THREE.Shape();
+    tailShape.moveTo(0, 0);
+    tailShape.lineTo(1.2, -1.2);
+    tailShape.lineTo(0, -1);
+    const tailGeom = new THREE.ShapeGeometry(tailShape);
+    
+    const t1 = new THREE.Mesh(tailGeom, mainMat);
+    t1.rotation.y = Math.PI/2 + 0.3;
+    t1.position.set(0.6, 0.1, -1.8);
+    jet.add(t1);
+
+    const t2 = t1.clone();
+    t2.rotation.y = Math.PI/2 - 0.3;
+    t2.position.x = -0.6;
+    jet.add(t2);
 
     // Engine
-    const eng = new THREE.Mesh(new THREE.CylinderGeometry(0.4, 0.4, 0.5, 16), new THREE.MeshBasicMaterial({ color: 0x00ffff }));
+    const eng = new THREE.Mesh(new THREE.CylinderGeometry(0.4, 0.4, 0.5, 16), glowMat);
     eng.rotateX(Math.PI/2); eng.position.z = -2.8;
     jet.add(eng);
     jet.engine = eng;
@@ -134,7 +149,6 @@ function animate() {
         const boost = keys['ShiftLeft'] || keys['ShiftRight'];
         speed = THREE.MathUtils.lerp(speed, boost ? 4.0 : 1.2, 0.1);
         
-        // Speed lines effect
         speedLines.children.forEach(l => {
             l.material.opacity = THREE.MathUtils.lerp(l.material.opacity, boost ? 0.8 : 0, 0.1);
             l.position.z += speed * 2;
@@ -154,7 +168,6 @@ function animate() {
         const dir = new THREE.Vector3(0,0,1).applyQuaternion(player.quaternion);
         player.position.add(dir.multiplyScalar(speed));
 
-        // Collision & Bullets
         for(let i=bullets.length-1; i>=0; i--) {
             const b = bullets[i]; b.position.add(b.userData.vel); b.userData.life--;
             enemies.forEach((e, j) => {
@@ -168,7 +181,6 @@ function animate() {
             if(b.userData.life <= 0 && bullets[i] === b) { scene.remove(b); bullets.splice(i, 1); }
         }
 
-        // Particles
         for(let i=particles.length-1; i>=0; i--) {
             const p = particles[i]; p.position.add(p.userData.vel); p.userData.life--;
             if(p.userData.life <= 0) { scene.remove(p); particles.splice(i, 1); }
@@ -177,7 +189,6 @@ function animate() {
         if(player.position.y < -9.5) isGameOver = true;
         if(isGameOver) { document.getElementById('overlay').style.display = 'flex'; document.getElementById('overlay').querySelector('h1').innerText = 'MISSION FAILED'; }
 
-        // Camera
         const camOff = new THREE.Vector3(0, 2, -14).applyQuaternion(player.quaternion);
         camera.position.lerp(player.position.clone().add(camOff), 0.1);
         camera.lookAt(player.position.clone().add(dir.multiplyScalar(25)));
