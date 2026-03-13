@@ -1,128 +1,99 @@
 // Scene Setup
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x87CEEB); // Sky Blue
-scene.fog = new THREE.Fog(0x87CEEB, 200, 3000);
+scene.background = new THREE.Color(0x1a2a4a); // Deep Atmosphere Blue
+scene.fog = new THREE.FogExp2(0x87CEEB, 0.0008); // Exponential fog for better depth
 
-const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 5000);
+const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 10000);
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.shadowMap.enabled = true; // Enable shadows
 document.getElementById('container').appendChild(renderer.domElement);
 
-// Lighting - MUCH BRIGHTER
-scene.add(new THREE.AmbientLight(0xffffff, 0.7)); // Higher ambient light
-const dirLight = new THREE.DirectionalLight(0xffffff, 2.0);
-dirLight.position.set(200, 500, 200);
+// Lighting
+scene.add(new THREE.AmbientLight(0x4040ff, 0.4)); // Blue-tinted ambient
+const dirLight = new THREE.DirectionalLight(0xffffff, 2.5);
+dirLight.position.set(500, 1000, 500);
+dirLight.castShadow = true;
 scene.add(dirLight);
 
-// Sun (Visual Representative)
-const sunGeom = new THREE.SphereGeometry(30, 32, 32);
-const sunMat = new THREE.MeshBasicMaterial({ color: 0xffffaa, transparent: true, opacity: 0.8 });
-const sun = new THREE.Mesh(sunGeom, sunMat);
-sun.position.set(500, 1000, 500);
-scene.add(sun);
+// Sun (Enhanced with Glow Layers)
+const sunGroup = new THREE.Group();
+const sunGeom = new THREE.SphereGeometry(40, 32, 32);
+const sunMat = new THREE.MeshBasicMaterial({ color: 0xffffee });
+const sunCore = new THREE.Mesh(sunGeom, sunMat);
+sunGroup.add(sunCore);
 
-// Diverse Stars (Keep for high-altitude look)
+for(let i=1; i<=3; i++) {
+    const glowGeom = new THREE.SphereGeometry(40 + i*30, 32, 32);
+    const glowMat = new THREE.MeshBasicMaterial({ color: 0xffffaa, transparent: true, opacity: 0.2 / i });
+    const glow = new THREE.Mesh(glowGeom, glowMat);
+    sunGroup.add(glow);
+}
+sunGroup.position.set(800, 1200, 800);
+scene.add(sunGroup);
+
+// Ocean (Upgraded from GridHelper to Mesh)
+const oceanGeom = new THREE.PlaneGeometry(20000, 20000);
+const oceanMat = new THREE.MeshPhongMaterial({ 
+    color: 0x004488, 
+    shininess: 90, 
+    specular: 0x00ffff,
+    transparent: true,
+    opacity: 0.9
+});
+const ocean = new THREE.Mesh(oceanGeom, oceanMat);
+ocean.rotation.x = -Math.PI / 2;
+ocean.position.y = -10;
+scene.add(ocean);
+
+// Stars and Nebula (Improved placement)
 function createStars() {
-    const starColors = [0xffffff, 0xaaaaff, 0xffffaa, 0xffaaaa];
+    const starColors = [0xffffff, 0xaaaaff, 0xffffaa];
     starColors.forEach(color => {
         const starGeom = new THREE.BufferGeometry();
         const starPos = [];
-        for(let i=0; i<500; i++) starPos.push((Math.random()-0.5)*4000, 500 + Math.random()*1500, (Math.random()-0.5)*4000);
+        for(let i=0; i<1000; i++) {
+            starPos.push(
+                (Math.random()-0.5)*8000, 
+                1500 + Math.random()*1500, 
+                (Math.random()-0.5)*8000
+            );
+        }
         starGeom.setAttribute('position', new THREE.Float32BufferAttribute(starPos, 3));
-        scene.add(new THREE.Points(starGeom, new THREE.PointsMaterial({ color: color, size: Math.random() * 2 + 0.5 })));
+        scene.add(new THREE.Points(starGeom, new THREE.PointsMaterial({ color: color, size: 2, sizeAttenuation: true })));
     });
 }
 createStars();
 
-// Nebula Effect (Lighter tones)
-const nebulaGeom = new THREE.BufferGeometry();
-const nebulaPos = [];
-for(let i=0; i<100; i++) nebulaPos.push((Math.random()-0.5)*3000, 300 + (Math.random()-0.5)*500, (Math.random()-0.5)*3000);
-nebulaGeom.setAttribute('position', new THREE.Float32BufferAttribute(nebulaPos, 3));
-const nebula = new THREE.Points(nebulaGeom, new THREE.PointsMaterial({ color: 0xffffff, size: 50, transparent: true, opacity: 0.1 }));
-scene.add(nebula);
-
-// Speed Lines (for Boost)
-const speedLines = new THREE.Group();
-const lineGeom = new THREE.BoxGeometry(0.02, 0.02, 8);
-const lineMat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0 });
-for(let i=0; i<60; i++) {
-    const line = new THREE.Mesh(lineGeom, lineMat);
-    line.position.set((Math.random()-0.5)*50, (Math.random()-0.5)*40, -Math.random()*100);
-    speedLines.add(line);
-}
-camera.add(speedLines);
-scene.add(camera);
-
-// Fighter Jet (Fixed Symmetrical Wings)
-function createFighterJet() {
-    const jet = new THREE.Group();
-    const mainMat = new THREE.MeshPhongMaterial({ color: 0xe0e0e0, shininess: 100 }); // Silver/Light Grey
-    const glowMat = new THREE.MeshBasicMaterial({ color: 0xff4400 }); // Orange Thruster
-
-    // Fuselage
-    const body = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.5, 6, 8), mainMat);
-    body.rotateX(Math.PI / 2);
-    jet.add(body);
-
-    // Wings
-    const wingShape = new THREE.Shape();
-    wingShape.moveTo(0, 1.5);
-    wingShape.lineTo(4.5, -1.5);
-    wingShape.lineTo(0, -0.5);
-    wingShape.lineTo(-4.5, -1.5);
-    wingShape.lineTo(0, 1.5);
-    
-    const wingGeom = new THREE.ShapeGeometry(wingShape);
-    const wings = new THREE.Mesh(wingGeom, new THREE.MeshPhongMaterial({ color: 0xd0d0d0, side: THREE.DoubleSide }));
-    wings.rotation.x = Math.PI / 2;
-    jet.add(wings);
-
-    // Tails
-    const tailShape = new THREE.Shape();
-    tailShape.moveTo(0, 0);
-    tailShape.lineTo(1.2, -1.2);
-    tailShape.lineTo(0, -1);
-    const tailGeom = new THREE.ShapeGeometry(tailShape);
-    
-    const t1 = new THREE.Mesh(tailGeom, mainMat);
-    t1.rotation.y = Math.PI/2 + 0.3;
-    t1.position.set(0.6, 0.1, -1.8);
-    jet.add(t1);
-
-    const t2 = t1.clone();
-    t2.rotation.y = Math.PI/2 - 0.3;
-    t2.position.x = -0.6;
-    jet.add(t2);
-
-    // Engine
-    const eng = new THREE.Mesh(new THREE.CylinderGeometry(0.4, 0.4, 0.5, 16), glowMat);
-    eng.rotateX(Math.PI/2); eng.position.z = -2.8;
-    jet.add(eng);
-    jet.engine = eng;
-
-    return jet;
-}
-
-const player = createFighterJet();
-scene.add(player);
-
-// Clouds - MORE AND BRIGHTER
+// Clouds (More organic look)
 const clouds = [];
 function createCloud(pos) {
     const cloud = new THREE.Group();
-    const cloudMat = new THREE.MeshPhongMaterial({ color: 0xffffff, transparent: true, opacity: 0.8 });
-    for(let i=0; i<8; i++) {
-        const part = new THREE.Mesh(new THREE.SphereGeometry(4 + Math.random()*6, 12, 12), cloudMat);
-        part.position.set(Math.random()*15, Math.random()*5, Math.random()*15);
+    const cloudMat = new THREE.MeshStandardMaterial({ 
+        color: 0xffffff, 
+        transparent: true, 
+        opacity: 0.7,
+        flatShading: true
+    });
+    const partsCount = 5 + Math.floor(Math.random() * 5);
+    for(let i=0; i<partsCount; i++) {
+        const part = new THREE.Mesh(new THREE.SphereGeometry(6 + Math.random()*10, 8, 8), cloudMat);
+        part.position.set(Math.random()*25 - 12, Math.random()*8 - 4, Math.random()*25 - 12);
+        part.scale.set(1.5, 0.8, 1);
         cloud.add(part);
     }
     cloud.position.copy(pos);
     scene.add(cloud);
     clouds.push(cloud);
 }
-for(let i=0; i<150; i++) createCloud(new THREE.Vector3((Math.random()-0.5)*5000, 20 + Math.random()*300, (Math.random()-0.5)*5000));
+for(let i=0; i<200; i++) {
+    createCloud(new THREE.Vector3(
+        (Math.random()-0.5)*8000, 
+        50 + Math.random()*400, 
+        (Math.random()-0.5)*8000
+    ));
+}
 
 // Floating Islands
 const islands = [];
